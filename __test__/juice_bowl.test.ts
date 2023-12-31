@@ -1,19 +1,19 @@
 import { describe, test, expect, beforeAll, beforeEach } from '@jest/globals';
 import { algorandFixture } from '@algorandfoundation/algokit-utils/testing';
-import { JuiceBowlClient } from '../contracts/clients/JuiceBowlClient';
+import { JuiceBoxClient } from '../contracts/clients/JuiceBoxClient';
 
 const fixture = algorandFixture();
 
-let appClient: JuiceBowlClient;
+let appClient: JuiceBoxClient;
 
-describe('JuiceBowl', () => {
+describe('JuiceBox', () => {
   beforeEach(fixture.beforeEach);
 
   beforeAll(async () => {
     await fixture.beforeEach();
     const { algod, testAccount } = fixture.context;
 
-    appClient = new JuiceBowlClient(
+    appClient = new JuiceBoxClient(
       {
         sender: testAccount,
         resolveBy: 'id',

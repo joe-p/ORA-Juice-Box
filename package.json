@@ -1,11 +1,11 @@
 {
-  "name": "juice_bowl",
+  "name": "juice_box",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "generate-client": "algokitgen generate -a contracts/artifacts/JuiceBowl.arc32.json -o contracts/clients/JuiceBowlClient.ts",
-    "compile-contract": "tealscript contracts/juice_bowl.algo.ts contracts/artifacts",
-    "generate-components": "algokit-generate-component contracts/artifacts/JuiceBowl.arc32.json contracts/artifacts/components",
+    "generate-client": "algokitgen generate -a contracts/artifacts/JuiceBox.arc32.json -o contracts/clients/JuiceBoxClient.ts",
+    "compile-contract": "tealscript contracts/juice_box.algo.ts contracts/artifacts",
+    "generate-components": "algokit-generate-component contracts/artifacts/JuiceBox.arc32.json contracts/artifacts/components",
     "build": "npm run compile-contract && npm run generate-client",
     "test": "npm run build && jest",
     "lint": "eslint . --ext .ts",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@algorandfoundation/algokit-client-generator": "^2.2.1",
-    "@algorandfoundation/tealscript": "^0.63.0",
+    "@algorandfoundation/tealscript": "^0.67.0",
     "@jest/globals": "^29.5.0",
     "@joe-p/algokit-generate-component": "^0.2.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",

@@ -1,0 +1,80 @@
+{
+  "name": "JuiceBox",
+  "desc": "",
+  "methods": [
+    {
+      "name": "createApplication",
+      "args": [
+        {
+          "name": "app",
+          "type": "application",
+          "desc": ""
+        },
+        {
+          "name": "asa",
+          "type": "asset",
+          "desc": ""
+        }
+      ],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "optIntoORA",
+      "args": [],
+      "desc": "",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "mine",
+      "args": [
+        {
+          "name": "mbrAndFeePayment",
+          "type": "pay",
+          "desc": "Payment to this app that covers the juice fee and any necessary MBRs"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "desc": ""
+        }
+      ],
+      "desc": "Mine ORA",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    },
+    {
+      "name": "claim",
+      "args": [
+        {
+          "name": "epoch",
+          "type": "uint64",
+          "desc": "The epoch to claim from"
+        },
+        {
+          "name": "to",
+          "type": "address",
+          "desc": "The address to send the ORA to"
+        },
+        {
+          "name": "_ora",
+          "type": "asset",
+          "desc": "The ORA asset ID (for reference)"
+        }
+      ],
+      "desc": "Claim ORA proportional to the amount juiced in the given epoch",
+      "returns": {
+        "type": "void",
+        "desc": ""
+      }
+    }
+  ]
+}
