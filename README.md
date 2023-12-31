@@ -1,6 +1,6 @@
 # !!! WARNING: NOT TESTED !!!
 
-I have not tested this contract and do no plan to deploy this contract. This is merely a proof-of-conceept that anyone can use to build ontop of if they wish, but I take no liability. Happy to answer any questions though!
+I have not tested this contract and do no plan to deploy this contract. This is merely a proof-of-concept that anyone can use to build ontop of if they wish, but I take no liability. Happy to answer any questions though!
 
 It's also possible I am missing something fundamental and this is a terrible idea...
 
