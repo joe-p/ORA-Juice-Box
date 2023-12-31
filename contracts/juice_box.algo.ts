@@ -1,7 +1,7 @@
 import { Contract } from '@algorandfoundation/tealscript';
 
 type JuicerID = { address: Address; epoch: number };
-type JuicerInfo = { juiced: number; claimed: number };
+type JuicerInfo = { juiced: number; claimed: boolean };
 
 type Epoch = {
   /** The ORA round this epoch started */
@@ -64,7 +64,7 @@ export class JuiceBox extends Contract {
 
     if (!this.juicers(juicer).exists) {
       const preMBR = this.app.address.minBalance;
-      this.juicers(juicer).value = { juiced: 0, claimed: 0 };
+      this.juicers(juicer).value = { juiced: 0, claimed: false };
       juiceAmount = juiceAmount - (this.app.address.minBalance - preMBR);
     }
 
@@ -88,9 +88,8 @@ export class JuiceBox extends Contract {
 
     // By incrementing by the payment amount (instead of juiceAmount),
     // the cost of the MBRs is spread across all juicers
-    this.juicers(juicer).value.juiced = this.juicers(juicer).value.juiced + mbrAndFeePayment.amount;
-    this.epochs(this.epoch.value).value.totalJuiced =
-      this.epochs(this.epoch.value).value.totalJuiced + mbrAndFeePayment.amount;
+    this.juicers(juicer).value.juiced += mbrAndFeePayment.amount;
+    this.epochs(this.epoch.value).value.totalJuiced += mbrAndFeePayment.amount;
   }
 
   private endEpoch(): void {
@@ -130,7 +129,7 @@ export class JuiceBox extends Contract {
 
     const amount = (juicerInfo.juiced / epochInfo.totalJuiced) * epochInfo.mined;
 
-    this.juicers(juicer).value.claimed = 1;
+    this.juicers(juicer).value.claimed = true;
 
     sendAssetTransfer({
       xferAsset: this.orangeAsa.value,
