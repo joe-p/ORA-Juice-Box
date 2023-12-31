@@ -1,8 +1,22 @@
 import { Contract } from '@algorandfoundation/tealscript';
 
-type JuicerID = { address: Address; epoch: number };
-type JuicerInfo = { juiced: number; claimed: boolean };
+/** Information about a juicer */
+type JuicerInfo = {
+  /** The total amount juiced (fees burnt) */
+  juiced: number;
+  /** Whether this juicer has claimed their ORA for the given epoch */
+  claimed: boolean;
+};
 
+/** Key used to indetify a juicer for a given epoch */
+type JuicerID = {
+  /** The address of the juicer */
+  address: Address;
+  /** The epoch */
+  epoch: number;
+};
+
+/** An epoch is some period of Algorand rounds where the app earns ORA */
 type Epoch = {
   /** The ORA round this epoch started */
   start: number;
@@ -50,9 +64,15 @@ export class JuiceBox extends Contract {
    * Mine ORA
    *
    * @param mbrAndFeePayment Payment to this app that covers the juice fee and any necessary MBRs
-   * @param to
+   * @param to The address to mine on behalf of
+   * @param _oraApp ORA application (for reference)
    */
-  mine(mbrAndFeePayment: PayTxn, to: Address): void {
+  mine(
+    mbrAndFeePayment: PayTxn,
+    to: Address,
+    // eslint-disable-next-line no-unused-vars
+    _oraApp: Application
+  ): void {
     verifyPayTxn(mbrAndFeePayment, { receiver: this.app.address });
 
     const juicer: JuicerID = {
@@ -92,6 +112,9 @@ export class JuiceBox extends Contract {
     this.epochs(this.epoch.value).value.totalJuiced += mbrAndFeePayment.amount;
   }
 
+  /**
+   * End the current epoch
+   */
   private endEpoch(): void {
     const oraMined = this.totalOra.value - this.app.address.assetBalance(this.orangeAsa.value);
     assert(oraMined);
