@@ -1,25 +1,29 @@
-# TEALScript Project
+# !!! WARNING: NOT TESTED !!!
 
-## Documentation
+I have not tested this contract and do no plan to deploy this contract. This is merely a proof-of-conceept that anyone can use to build ontop of if they wish, but I take no liability. Happy to answer any questions though!
 
-For TEALScript documentation, go to https://tealscript.algo.xyz
+It's also possible I am missing something fundamental and this is a terrible idea...
 
-## Usage
+# The Juice Box Contract
 
-### Algokit
+This is a proof-of-concept contract for what I am calling a juice box. A juice box is essentially a mining pool for ORA. https://oranges.meme
 
-This template assumes you have a local network running on your machine. The easiet way to setup a local network is with [algokit](https://github.com/algorandfoundation/algokit-cli). If you don't have Algokit or its dependencies installed locally you can open this repository in a GitHub codespace via https://codespaces.new and choosing this repo.
+# What's the point?
 
-### Build Contract
+Right now, ORA is awarded to those who have performed most juicing. Those who haven't juiced as much as the winner won't get any ORA despite their efforts. They might eventually win one block with the sum of their efforts over time, but its no gurantee especially if whales are contiously juicing. 
 
-`npm run build` will compile the contract to TEAL and generate an ABI and appspec JSON in [./contracts/artifacts](./contracts/artifacts/) and a algokit TypeScript client in [./contracts/clients](./contracts/clients/).
+This contract allows anyone to pool their juicing efforts in a decentralized way. Much like a mining pool, this contract will split the ORA block reward to everyone juicing through it proportional to the amount they have juice (of course, only if the contract is the winner). 
 
-`npm run compile-contract` or `npm run generate-client` can be used to compile the contract or generate the contract seperately.
+## Example
 
-### Run Tests
+If there are three people juicing different amounts and the reward is 100 ORA (for simplicity sake):
 
-`npm run test` will execute the tests defined in [./\_\_test\_\_](./__test__) 
+| Name    | Amount Juiced | ORA Earned w/ Juice Box | ORA Earned w/o Juice Box |
+| ------- | ------------- | ----------------------- | ------------------------ |
+| Alice   | 1A            | 10                      | 0                        |
+| Bob     | 2A            | 20                      | 0                        |
+| Charlie | 7A            | 70                      | 100                      |
 
-### Lint
+# How does it work?
 
-`npm run lint` will lint the contracts and tests with ESLint.
+Instead of a direct call the ORA contract, to juice through a juice box you call this contract with an atomic payment. The payment will then cover the fees for a `mine` call to the ORA contract sent via an inner transaction. The juice box contract will keep track of how much everyone has juiced and how much ORA the juice box has mined. One the contract has received ORA, anyone that has juiced can claim their share of the ORA.
