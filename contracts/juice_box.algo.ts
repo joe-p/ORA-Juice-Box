@@ -150,7 +150,7 @@ export class JuiceBox extends Contract {
     const juicerInfo = this.juicers(juicer).value;
     const epochInfo = this.epochs(epoch).value;
 
-    const amount = (juicerInfo.juiced / epochInfo.totalJuiced) * epochInfo.mined;
+    const amount = wideRatio([juicerInfo.juiced, epochInfo.mined], [epochInfo.totalJuiced]);
 
     this.juicers(juicer).value.claimed = true;
 

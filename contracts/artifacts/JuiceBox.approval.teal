@@ -493,7 +493,7 @@ if2_end:
 	frame_bury 2 // storage key//epochInfo
 
 	// contracts/juice_box.algo.ts:153
-	// amount = (juicerInfo.juiced / epochInfo.totalJuiced) * epochInfo.mined
+	// amount = wideRatio([juicerInfo.juiced, epochInfo.mined], [epochInfo.totalJuiced])
 	frame_dig 1 // storage key//juicerInfo
 	box_get
 	assert
@@ -504,15 +504,21 @@ if2_end:
 	frame_dig 2 // storage key//epochInfo
 	box_get
 	assert
-	extract 16 8
+	extract 24 8
 	btoi
-	/
+	mulw
+	int 0
 	frame_dig 2 // storage key//epochInfo
 	box_get
 	assert
-	extract 24 8
+	extract 16 8
 	btoi
-	*
+	divmodw
+	pop
+	pop
+	swap
+	!
+	assert
 	frame_bury 3 // amount: uint64
 
 	// contracts/juice_box.algo.ts:155
