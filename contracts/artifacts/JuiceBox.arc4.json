@@ -42,7 +42,12 @@
         {
           "name": "to",
           "type": "address",
-          "desc": ""
+          "desc": "The address to mine on behalf of"
+        },
+        {
+          "name": "_oraApp",
+          "type": "application",
+          "desc": "ORA application (for reference)"
         }
       ],
       "desc": "Mine ORA",

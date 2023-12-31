@@ -42,13 +42,13 @@ abi_route_createApplication:
 createApplication:
 	proto 2 0
 
-	// contracts/juice_box.algo.ts:37
+	// contracts/juice_box.algo.ts:51
 	// this.orangeApp.value = app
 	byte 0x6f72616e6765417070 // "orangeApp"
 	frame_dig -1 // app: Application
 	app_global_put
 
-	// contracts/juice_box.algo.ts:38
+	// contracts/juice_box.algo.ts:52
 	// this.orangeAsa.value = asa
 	byte 0x6f72616e6765417361 // "orangeAsa"
 	frame_dig -2 // asa: Asset
@@ -65,7 +65,7 @@ abi_route_optIntoORA:
 optIntoORA:
 	proto 0 0
 
-	// contracts/juice_box.algo.ts:42
+	// contracts/juice_box.algo.ts:56
 	// sendAssetTransfer({
 	//       xferAsset: this.orangeAsa.value,
 	//       assetAmount: 0,
@@ -75,18 +75,18 @@ optIntoORA:
 	int axfer
 	itxn_field TypeEnum
 
-	// contracts/juice_box.algo.ts:43
+	// contracts/juice_box.algo.ts:57
 	// xferAsset: this.orangeAsa.value
 	byte 0x6f72616e6765417361 // "orangeAsa"
 	app_global_get
 	itxn_field XferAsset
 
-	// contracts/juice_box.algo.ts:44
+	// contracts/juice_box.algo.ts:58
 	// assetAmount: 0
 	int 0
 	itxn_field AssetAmount
 
-	// contracts/juice_box.algo.ts:45
+	// contracts/juice_box.algo.ts:59
 	// assetReceiver: this.app.address
 	global CurrentApplicationAddress
 	itxn_field AssetReceiver
@@ -100,6 +100,11 @@ optIntoORA:
 	retsub
 
 abi_route_mine:
+	// _oraApp: application
+	txna ApplicationArgs 2
+	btoi
+	txnas Applications
+
 	// to: address
 	txna ApplicationArgs 1
 	dup
@@ -118,25 +123,26 @@ abi_route_mine:
 	==
 	assert
 
-	// execute mine(address,pay)void
+	// execute mine(application,address,pay)void
 	callsub mine
 	int 1
 	return
 
-// mine(address,pay)void
+// mine(application,address,pay)void
 //
 // Mine ORA
 //
 // @param mbrAndFeePayment Payment to this app that covers the juice fee and any necessary MBRs
-// @param to
+// @param to The address to mine on behalf of
+// @param _oraApp ORA application (for reference)
 mine:
-	proto 2 0
+	proto 3 0
 
 	// Push empty bytes after the frame pointer to reserve space for local variables
 	byte 0x
 	dupn 4
 
-	// contracts/juice_box.algo.ts:56
+	// contracts/juice_box.algo.ts:76
 	// verifyPayTxn(mbrAndFeePayment, { receiver: this.app.address })
 	// verify receiver
 	frame_dig -1 // mbrAndFeePayment: PayTxn
@@ -145,7 +151,7 @@ mine:
 	==
 	assert
 
-	// contracts/juice_box.algo.ts:58
+	// contracts/juice_box.algo.ts:78
 	// juicer: JuicerID = {
 	//       epoch: this.epoch.value,
 	//       address: to,
@@ -157,14 +163,14 @@ mine:
 	concat
 	frame_bury 0 // juicer: JuicerID
 
-	// contracts/juice_box.algo.ts:63
+	// contracts/juice_box.algo.ts:83
 	// juiceAmount = mbrAndFeePayment.amount
 	frame_dig -1 // mbrAndFeePayment: PayTxn
 	gtxns Amount
 	frame_bury 1 // juiceAmount: uint64
 
 	// if0_condition
-	// contracts/juice_box.algo.ts:65
+	// contracts/juice_box.algo.ts:85
 	// !this.juicers(juicer).exists
 	frame_dig 0 // juicer: JuicerID
 	box_len
@@ -174,14 +180,14 @@ mine:
 	bz if0_end
 
 	// if0_consequent
-	// contracts/juice_box.algo.ts:66
+	// contracts/juice_box.algo.ts:86
 	// preMBR = this.app.address.minBalance
 	global CurrentApplicationAddress
 	acct_params_get AcctMinBalance
 	assert
 	frame_bury 2 // preMBR: uint64
 
-	// contracts/juice_box.algo.ts:67
+	// contracts/juice_box.algo.ts:87
 	// this.juicers(juicer).value = { juiced: 0, claimed: false }
 	frame_dig 0 // juicer: JuicerID
 	byte 0x0000000000000000
@@ -191,7 +197,7 @@ mine:
 	setbit
 	box_put
 
-	// contracts/juice_box.algo.ts:68
+	// contracts/juice_box.algo.ts:88
 	// juiceAmount = juiceAmount - (this.app.address.minBalance - preMBR)
 	frame_dig 1 // juiceAmount: uint64
 	global CurrentApplicationAddress
@@ -204,7 +210,7 @@ mine:
 
 if0_end:
 	// if1_condition
-	// contracts/juice_box.algo.ts:71
+	// contracts/juice_box.algo.ts:91
 	// !this.epochs(this.epoch.value).exists
 	byte 0x65706f6368 // "epoch"
 	app_global_get
@@ -216,16 +222,16 @@ if0_end:
 	bz if1_end
 
 	// if1_consequent
-	// contracts/juice_box.algo.ts:72
+	// contracts/juice_box.algo.ts:92
 	// preMBR = this.app.address.minBalance
 	global CurrentApplicationAddress
 	acct_params_get AcctMinBalance
 	assert
 	frame_bury 3 // preMBR: uint64
 
-	// contracts/juice_box.algo.ts:73
+	// contracts/juice_box.algo.ts:93
 	// this.epochs(this.epoch.value).value = {
-	//         start: globals.round - (globals.round % 5),
+	//         start: globals.round,
 	//         end: 0,
 	//         totalJuiced: 0,
 	//         mined: 0,
@@ -234,10 +240,6 @@ if0_end:
 	app_global_get
 	itob
 	global Round
-	global Round
-	int 5
-	%
-	-
 	itob
 	byte 0x0000000000000000
 	concat
@@ -247,7 +249,7 @@ if0_end:
 	concat
 	box_put
 
-	// contracts/juice_box.algo.ts:79
+	// contracts/juice_box.algo.ts:99
 	// juiceAmount = juiceAmount - (this.app.address.minBalance - preMBR)
 	frame_dig 1 // juiceAmount: uint64
 	global CurrentApplicationAddress
@@ -259,7 +261,7 @@ if0_end:
 	frame_bury 1 // juiceAmount: uint64
 
 if1_end:
-	// contracts/juice_box.algo.ts:82
+	// contracts/juice_box.algo.ts:102
 	// sendMethodCall<[Address], void>({
 	//       name: 'mine',
 	//       applicationID: this.orangeApp.value,
@@ -272,18 +274,18 @@ if1_end:
 	method "mine(address)void"
 	itxn_field ApplicationArgs
 
-	// contracts/juice_box.algo.ts:84
+	// contracts/juice_box.algo.ts:104
 	// applicationID: this.orangeApp.value
 	byte 0x6f72616e6765417070 // "orangeApp"
 	app_global_get
 	itxn_field ApplicationID
 
-	// contracts/juice_box.algo.ts:85
+	// contracts/juice_box.algo.ts:105
 	// methodArgs: [this.app.address]
 	global CurrentApplicationAddress
 	itxn_field ApplicationArgs
 
-	// contracts/juice_box.algo.ts:86
+	// contracts/juice_box.algo.ts:106
 	// fee: juiceAmount
 	frame_dig 1 // juiceAmount: uint64
 	itxn_field Fee
@@ -291,7 +293,7 @@ if1_end:
 	// Submit inner transaction
 	itxn_submit
 
-	// contracts/juice_box.algo.ts:91
+	// contracts/juice_box.algo.ts:111
 	// this.juicers(juicer).value.juiced += mbrAndFeePayment.amount
 	store 255 // full array
 	load 255 // full array
@@ -311,7 +313,7 @@ if1_end:
 	cover 2
 	box_replace
 
-	// contracts/juice_box.algo.ts:92
+	// contracts/juice_box.algo.ts:112
 	// this.epochs(this.epoch.value).value.totalJuiced += mbrAndFeePayment.amount
 	int 16
 	byte 0x65706f6368 // "epoch"
@@ -333,13 +335,15 @@ if1_end:
 	retsub
 
 // endEpoch()void
+//
+// End the current epoch
 endEpoch:
 	proto 0 0
 
 	// Push empty bytes after the frame pointer to reserve space for local variables
 	byte 0x
 
-	// contracts/juice_box.algo.ts:96
+	// contracts/juice_box.algo.ts:119
 	// oraMined = this.totalOra.value - this.app.address.assetBalance(this.orangeAsa.value)
 	byte 0x746f74616c4f7261 // "totalOra"
 	app_global_get
@@ -351,17 +355,15 @@ endEpoch:
 	-
 	frame_bury 0 // oraMined: uint64
 
-	// contracts/juice_box.algo.ts:97
+	// contracts/juice_box.algo.ts:120
 	// assert(oraMined)
 	frame_dig 0 // oraMined: uint64
 	assert
 
-	// contracts/juice_box.algo.ts:99
-	// this.epochs(this.epoch.value).value.end = globals.round % 5
+	// contracts/juice_box.algo.ts:122
+	// this.epochs(this.epoch.value).value.end = globals.round
 	int 8
 	global Round
-	int 5
-	%
 	itob
 	byte 0x65706f6368 // "epoch"
 	app_global_get
@@ -369,7 +371,7 @@ endEpoch:
 	cover 2
 	box_replace
 
-	// contracts/juice_box.algo.ts:100
+	// contracts/juice_box.algo.ts:123
 	// this.epochs(this.epoch.value).value.mined = oraMined
 	int 24
 	frame_dig 0 // oraMined: uint64
@@ -380,7 +382,7 @@ endEpoch:
 	cover 2
 	box_replace
 
-	// contracts/juice_box.algo.ts:101
+	// contracts/juice_box.algo.ts:124
 	// this.totalOra.value += oraMined
 	byte 0x746f74616c4f7261 // "totalOra"
 	app_global_get
@@ -390,7 +392,7 @@ endEpoch:
 	swap
 	app_global_put
 
-	// contracts/juice_box.algo.ts:102
+	// contracts/juice_box.algo.ts:125
 	// this.epoch.value += 1
 	byte 0x65706f6368 // "epoch"
 	app_global_get
@@ -437,7 +439,7 @@ claim:
 	byte 0x
 	dupn 4
 
-	// contracts/juice_box.algo.ts:117
+	// contracts/juice_box.algo.ts:140
 	// juicer: JuicerID = {
 	//       epoch: epoch,
 	//       address: to,
@@ -449,7 +451,7 @@ claim:
 	frame_bury 0 // juicer: JuicerID
 
 	// if2_condition
-	// contracts/juice_box.algo.ts:122
+	// contracts/juice_box.algo.ts:145
 	// this.epochs(epoch).value.end === 0
 	frame_dig -1 // epoch: number
 	itob
@@ -462,12 +464,12 @@ claim:
 	bz if2_end
 
 	// if2_consequent
-	// contracts/juice_box.algo.ts:122
+	// contracts/juice_box.algo.ts:145
 	// this.endEpoch()
 	callsub endEpoch
 
 if2_end:
-	// contracts/juice_box.algo.ts:125
+	// contracts/juice_box.algo.ts:148
 	// assert(!this.juicers(juicer).value.claimed)
 	frame_dig 0 // juicer: JuicerID
 	box_get
@@ -479,18 +481,18 @@ if2_end:
 	!
 	assert
 
-	// contracts/juice_box.algo.ts:127
+	// contracts/juice_box.algo.ts:150
 	// juicerInfo = this.juicers(juicer).value
 	frame_dig 0 // juicer: JuicerID
 	frame_bury 1 // storage key//juicerInfo
 
-	// contracts/juice_box.algo.ts:128
+	// contracts/juice_box.algo.ts:151
 	// epochInfo = this.epochs(epoch).value
 	frame_dig -1 // epoch: number
 	itob
 	frame_bury 2 // storage key//epochInfo
 
-	// contracts/juice_box.algo.ts:130
+	// contracts/juice_box.algo.ts:153
 	// amount = (juicerInfo.juiced / epochInfo.totalJuiced) * epochInfo.mined
 	frame_dig 1 // storage key//juicerInfo
 	box_get
@@ -513,7 +515,7 @@ if2_end:
 	*
 	frame_bury 3 // amount: uint64
 
-	// contracts/juice_box.algo.ts:132
+	// contracts/juice_box.algo.ts:155
 	// this.juicers(juicer).value.claimed = true
 	store 255 // full array
 	load 255 // full array
@@ -524,7 +526,7 @@ if2_end:
 	cover 2
 	box_replace
 
-	// contracts/juice_box.algo.ts:134
+	// contracts/juice_box.algo.ts:157
 	// sendAssetTransfer({
 	//       xferAsset: this.orangeAsa.value,
 	//       assetAmount: amount,
@@ -534,18 +536,18 @@ if2_end:
 	int axfer
 	itxn_field TypeEnum
 
-	// contracts/juice_box.algo.ts:135
+	// contracts/juice_box.algo.ts:158
 	// xferAsset: this.orangeAsa.value
 	byte 0x6f72616e6765417361 // "orangeAsa"
 	app_global_get
 	itxn_field XferAsset
 
-	// contracts/juice_box.algo.ts:136
+	// contracts/juice_box.algo.ts:159
 	// assetAmount: amount
 	frame_dig 3 // amount: uint64
 	itxn_field AssetAmount
 
-	// contracts/juice_box.algo.ts:137
+	// contracts/juice_box.algo.ts:160
 	// assetReceiver: to
 	frame_dig -2 // to: Address
 	itxn_field AssetReceiver
@@ -566,7 +568,7 @@ create_NoOp:
 
 call_NoOp:
 	method "optIntoORA()void"
-	method "mine(pay,address)void"
+	method "mine(pay,address,application)void"
 	method "claim(uint64,address,asset)void"
 	txna ApplicationArgs 0
 	match abi_route_optIntoORA abi_route_mine abi_route_claim
