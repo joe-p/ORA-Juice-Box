@@ -71,7 +71,7 @@ export class JuiceBox extends Contract {
     if (!this.epochs(this.epoch.value).exists) {
       const preMBR = this.app.address.minBalance;
       this.epochs(this.epoch.value).value = {
-        start: globals.round - (globals.round % 5),
+        start: globals.round,
         end: 0,
         totalJuiced: 0,
         mined: 0,
@@ -96,7 +96,7 @@ export class JuiceBox extends Contract {
     const oraMined = this.totalOra.value - this.app.address.assetBalance(this.orangeAsa.value);
     assert(oraMined);
 
-    this.epochs(this.epoch.value).value.end = globals.round % 5;
+    this.epochs(this.epoch.value).value.end = globals.round;
     this.epochs(this.epoch.value).value.mined = oraMined;
     this.totalOra.value += oraMined;
     this.epoch.value += 1;
